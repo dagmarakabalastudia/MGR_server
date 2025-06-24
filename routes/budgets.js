@@ -21,7 +21,7 @@ router.get("/", async (req, res) => {
   const userId = req.query.userId;
   const userExists = await User.findById(userId);
   if (!userExists) {
-    return res.status(404).json({ message: "User not found" });
+    return res.status(404).json({ message: "Nie znaleziono użytkownika" });
   }
   Budget.find({ $or: [{ owner: userId }, { participants: userId }] })
     .populate("owner", ["username", "mail"])
@@ -39,7 +39,7 @@ router.get("/:budgetId", async (req, res) => {
       .populate("participants", ["username", "mail"]);
 
     if (!budget) {
-      return res.status(404).json({ error: "Budget not found" });
+      return res.status(404).json({ error: "Nie znaleziono budżetu" });
     }
 
     res.status(200).json({ budget });
@@ -61,15 +61,15 @@ router.delete("/:budgetId", async (req, res) => {
     const deletedBudget = await Budget.findByIdAndDelete(budgetId);
 
     if (!deletedBudget) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Nie znaleziono użytkownika" });
     }
 
     res
       .status(200)
-      .json({ message: "Budget deleted successfully", deletedBudget });
+      .json({ message: "Budżet usunięto pomyślnie", deletedBudget });
   } catch (error) {
-    console.error("Error deleting budget:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Błąd usunięcia budżetu:", error);
+    res.status(500).json({ error: "Wewnętrzy błąd" });
   }
 });
 
@@ -81,7 +81,7 @@ router.post("/:budgetId/participants", async (req, res) => {
     const user = await User.findOne({ mail: userEmail });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "Nie znaleziono użytkownika" });
     }
 
     const updatedBudget = await Budget.findByIdAndUpdate(
@@ -91,13 +91,13 @@ router.post("/:budgetId/participants", async (req, res) => {
     ).populate("participants", ["name", "mail"]);
 
     if (!updatedBudget) {
-      return res.status(404).json({ message: "Budget not found" });
+      return res.status(404).json({ message: "Nie znaleziono budżetu" });
     }
 
     res.json(updatedBudget);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Błąd serwera" });
   }
 });
 

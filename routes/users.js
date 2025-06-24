@@ -59,7 +59,7 @@ router.post("/login", async (req, res) => {
   try {
     const fullUser = await User.findOne({ mail: req.body.mail });
     if (!fullUser) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Nie znaleziono użytkownika" });
     }
 
     const passwordMatch = true;
@@ -98,7 +98,7 @@ router.get("/:userId", async (req, res) => {
     const user = await User.findById(userId, "-password");
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Nie znaleziono użytkownika" });
     }
 
     res.status(200).json({ user });
@@ -115,7 +115,7 @@ router.put("/:userId", async (req, res) => {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Nie znaleziono użytkownika" });
     }
 
     const updatedUser = await User.findByIdAndUpdate(userId, userData, {
@@ -137,7 +137,7 @@ router.delete("/:userId", async (req, res) => {
     const deletedUser = await User.findByIdAndDelete(userId);
 
     if (!deletedUser) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Nie znaleziono użytkownika" });
     }
 
     res.status(200).json({ message: "User deleted successfully", deletedUser });

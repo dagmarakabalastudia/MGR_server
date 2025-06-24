@@ -76,7 +76,7 @@ router.get("/:transactionId", async (req, res) => {
       req.params.transactionId
     ).populate("category user", "name color icon mail");
     if (!transaction) {
-      return res.status(404).json({ message: "Transaction not found" });
+      return res.status(404).json({ message: "Transakcja nie znaleziona" });
     }
     res.json(transaction);
   } catch (error) {
@@ -119,7 +119,7 @@ router.put("/:transactionId", async (req, res) => {
 router.delete("/:transactionId", async (req, res) => {
   try {
     await Transaction.findByIdAndDelete(req.params.transactionId);
-    res.json({ message: "Transaction successfully deleted" });
+    res.json({ message: "Transakcja pomyślnie usunięta" });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

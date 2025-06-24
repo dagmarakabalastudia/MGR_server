@@ -47,7 +47,7 @@ router.put("/:categoryId", async (req, res) => {
 router.delete("/category/:categoryId", async (req, res) => {
   try {
     await Category.findByIdAndDelete(req.params.categoryId);
-    res.json({ message: "Category successfully deleted" });
+    res.json({ message: "Kategoria pomyślnie usunięta" });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -57,7 +57,7 @@ router.get("/category/:categoryId", async (req, res) => {
   try {
     const category = await Category.findById(req.params.categoryId);
     if (!category) {
-      return res.status(404).json({ message: "Category not found" });
+      return res.status(404).json({ message: "Nie znaleziono kategorii" });
     }
     res.json(category);
   } catch (error) {
