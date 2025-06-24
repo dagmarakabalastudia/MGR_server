@@ -10,19 +10,21 @@ router.post("/", async (req, res) => {
     const { username, password, confirmPassword, name, surname, mail } =
       req.body;
     if (confirmPassword !== password) {
-      return res.status(400).json({ error: "Password don't match" });
+      return res.status(400).json({ error: "Błąd haseł" });
     }
     if (!username || !password || !name || !surname || !mail) {
-      return res.status(400).json({ error: "Missing required fields" });
+      return res.status(400).json({ error: "Błąd danych" });
     }
 
     const existingUser = await User.findOne({ mail });
     if (existingUser) {
-      return res.status(400).json({ error: "Mail already exists" });
+      return res
+        .status(400)
+        .json({ error: "Adres e-mail jest już użytkowany" });
     }
     const existingUsername = await User.findOne({ username });
     if (existingUsername) {
-      return res.status(400).json({ error: "Username already exists" });
+      return res.status(400).json({ error: "Nazwa użytkownika istnieje" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -50,21 +52,23 @@ router.post("/", async (req, res) => {
     };
     res.status(200).json({ user, token });
   } catch (err) {
-    console.error("Error creating user:", err);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Błąd rejestracji", err);
+    res.status(500).json({ error: "Błąd serwera" });
   }
 });
 
 router.post("/login", async (req, res) => {
   try {
+    const { password } = req.body;
+
     const fullUser = await User.findOne({ mail: req.body.mail });
     if (!fullUser) {
       return res.status(404).json({ error: "Nie znaleziono użytkownika" });
     }
 
-    const passwordMatch = true;
+    const passwordMatch = await bcrypt.compare(password, fullUser.password);
     if (!passwordMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Złe dane logowania" });
     }
 
     const token = jwt.sign({ userId: fullUser._id }, process.env.JWT_SECRET, {
@@ -81,8 +85,8 @@ router.post("/login", async (req, res) => {
     };
     res.status(200).json({ user, token });
   } catch (error) {
-    console.error("Error logging in:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Błąd ładowania", error);
+    res.status(500).json({ error: "Błąd serwera" });
   }
 });
 
@@ -103,8 +107,8 @@ router.get("/:userId", async (req, res) => {
 
     res.status(200).json({ user });
   } catch (error) {
-    console.error("Error getting user:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Błąd pobrania danych o użytkowniku", error);
+    res.status(500).json({ error: "Błąd serwera" });
   }
 });
 
@@ -122,12 +126,10 @@ router.put("/:userId", async (req, res) => {
       new: true,
     });
 
-    res
-      .status(200)
-      .json({ message: "User updated successfully", user: updatedUser });
+    res.status(200).json({ message: "Dane zmienione", user: updatedUser });
   } catch (error) {
-    console.error("Error updating user:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Błąd edycji", error);
+    res.status(500).json({ error: "Błąd serwera" });
   }
 });
 
@@ -140,10 +142,10 @@ router.delete("/:userId", async (req, res) => {
       return res.status(404).json({ error: "Nie znaleziono użytkownika" });
     }
 
-    res.status(200).json({ message: "User deleted successfully", deletedUser });
+    res.status(200).json({ message: "Użytkownik usunięty", deletedUser });
   } catch (error) {
-    console.error("Error deleting user:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Błąd usunięcia użytkownika", error);
+    res.status(500).json({ error: "Błąd serwera" });
   }
 });
 module.exports = router;
