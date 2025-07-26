@@ -112,6 +112,40 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
+router.put("/:userId/password", async (req, res) => {
+  const { userId } = req.params;
+  const { oldPassword, newPassword, confirmPassword } = req.body;
+
+  if (!userId || !oldPassword || !newPassword || !confirmPassword) {
+    return res.status(400).json({ error: "Brakuje wymaganych danych" });
+  }
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ error: "Nowe hasła nie są zgodne" });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "Użytkownik nie istnieje" });
+    }
+
+    const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Stare hasło jest nieprawidłowe" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Hasło zostało zmienione pomyślnie" });
+  } catch (error) {
+    console.error("Błąd zmiany hasła:", error);
+    res.status(500).json({ error: "Błąd serwera" });
+  }
+});
+
 router.put("/:userId", async (req, res) => {
   const userId = req.params.userId;
   const userData = req.body;
@@ -132,7 +166,6 @@ router.put("/:userId", async (req, res) => {
     res.status(500).json({ error: "Błąd serwera" });
   }
 });
-
 router.delete("/:userId", async (req, res) => {
   const userId = req.params.userId;
   try {
